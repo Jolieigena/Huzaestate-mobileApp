@@ -46,7 +46,7 @@ The result is `android\app\build\outputs\bundle\release\app-release.aab`. Raise 
 
 ## 5. Steps in Play Console
 
-1. Create a Play developer account (one-time fee). An **organisation** account avoids the extra testing rule below; a personal account created after 2023 must run a closed test with at least 12 testers for 14 days before it can publish.
+1. Create a Play developer account (one-time fee) as an **organisation**, in the name of the registered company, **Huzalabs** (HuzaEstate itself is not a registered company). Google asks for the company's registration details and a D-U-N-S number for organisation accounts. An organisation account also avoids the extra testing rule: a personal account created after 2023 must run a closed test with at least 12 testers for 14 days before it can publish. The developer name Google shows on the store page comes from this account.
 2. Create the app: name HuzaEstate, default language, App (not game), Free.
 3. Upload the `.aab` to **Internal testing** first and install it from the Play link on a real phone.
 4. Fill in: privacy policy (`https://huzaestate.com/privacy`), app access (give reviewers a test buyer and seller login), ads (none), content rating questionnaire, target audience (18 and over, as in the Terms), data safety form, and the account-deletion URL.
