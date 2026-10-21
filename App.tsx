@@ -12,8 +12,9 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
-import type { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
-import { APP_USER_AGENT_NAME, IN_APP_HOSTS, WEB_URL } from './src/config';
+import type { ShouldStartLoadRequest, WebViewMessageEvent } from 'react-native-webview/lib/WebViewTypes';
+import { APP_USER_AGENT_NAME, IN_APP_HOSTS, SITE_HOSTS, WEB_URL } from './src/config';
+import { requestGoogleIdToken } from './src/googleSignIn';
 
 const GREEN = '#2ec440';
 const DARK = '#0f172a';
@@ -30,6 +31,7 @@ function Shell() {
   const insets = useSafeAreaInsets();
   const webView = useRef<ComponentRef<typeof WebView>>(null);
   const canGoBack = useRef(false);
+  const googleBusy = useRef(false);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
@@ -63,6 +65,25 @@ function Shell() {
     return false;
   }, []);
 
+  // The website's Google button cannot work inside the app (Google refuses sign-in in an embedded browser), so it asks the app to do
+  // the Google step: Android's own account picker. The answer goes back to the page, which signs in exactly as it does in a browser.
+  // Only HuzaEstate's own pages are listened to, never a payment page or anything else that might be on screen.
+  const onMessage = useCallback(async (event: WebViewMessageEvent) => {
+    if (!SITE_HOSTS.includes(hostOf(event.nativeEvent.url))) return;
+    let message: { type?: string } | null = null;
+    try {
+      message = JSON.parse(event.nativeEvent.data);
+    } catch {
+      return;
+    }
+    if (message?.type !== 'google-sign-in' || googleBusy.current) return;
+    googleBusy.current = true;
+    const result = await requestGoogleIdToken();
+    googleBusy.current = false;
+    const reply = result.ok ? `credential(${JSON.stringify(result.idToken)})` : result.cancelled ? 'cancel()' : `fail(${JSON.stringify(result.message)})`;
+    webView.current?.injectJavaScript(`window.__huzaNativeGoogle && window.__huzaNativeGoogle.${reply}; true;`);
+  }, []);
+
   const retry = () => {
     setFailed(false);
     setLoading(true);
@@ -88,6 +109,7 @@ function Shell() {
         overScrollMode="never"
         originWhitelist={['*']}
         onShouldStartLoadWithRequest={shouldLoad}
+        onMessage={onMessage}
         onNavigationStateChange={(state) => {
           canGoBack.current = state.canGoBack;
         }}

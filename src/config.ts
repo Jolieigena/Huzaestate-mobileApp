@@ -17,6 +17,9 @@ export const DEVELOPMENT_URL = 'http://localhost:8085';
 const SITE_URL = __DEV__ && TARGET === 'local' ? DEVELOPMENT_URL : PRODUCTION_URL;
 export const WEB_URL = __DEV__ && START_PATH !== '/' ? `${SITE_URL}${START_PATH}` : SITE_URL;
 
+/** The site's own addresses: the only pages the app lets ask it to do things (see onMessage in App.tsx). */
+export const SITE_HOSTS = ['huzaestate.com', 'www.huzaestate.com', 'localhost', '10.0.2.2'];
+
 /** Only the site itself and the card-payment pages are opened inside the app; any other address leaves it for the system browser. */
 export const IN_APP_HOSTS = [
   'huzaestate.com',
