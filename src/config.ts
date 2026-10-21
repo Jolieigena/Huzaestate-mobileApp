@@ -1,4 +1,4 @@
-import { TARGET } from './target';
+import { START_PATH, TARGET } from './target';
 
 // Where the app loads HuzaEstate from. The app is a native shell around the web app, so the web app is the single source of
 // truth: what ships on the website is what appears in the app, with no copy to keep in step.
@@ -14,7 +14,8 @@ export const PRODUCTION_URL = 'https://huzaestate.com';
 export const DEVELOPMENT_URL = 'http://localhost:8085';
 
 // While developing the app shows the deployed site (the real data) unless src/target.ts says "local"; release builds always do.
-export const WEB_URL = __DEV__ && TARGET === 'local' ? DEVELOPMENT_URL : PRODUCTION_URL;
+const SITE_URL = __DEV__ && TARGET === 'local' ? DEVELOPMENT_URL : PRODUCTION_URL;
+export const WEB_URL = __DEV__ && START_PATH !== '/' ? `${SITE_URL}${START_PATH}` : SITE_URL;
 
 /** Only the site itself and the card-payment pages are opened inside the app; any other address leaves it for the system browser. */
 export const IN_APP_HOSTS = [
