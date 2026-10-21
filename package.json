@@ -10,7 +10,9 @@
     "test": "jest",
     "emulator": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/emulator.ps1",
     "dev:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev.ps1",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "target:server": "node scripts/set-target.js server",
+    "target:local": "node scripts/set-target.js local"
   },
   "dependencies": {
     "react": "19.3.0",

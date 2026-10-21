@@ -18,8 +18,11 @@ Anything else you see in the app is the website. Change the website and the app 
 
 | Build | Address |
 | --- | --- |
-| Development (`__DEV__`) | `http://localhost:8085`, the website running on this computer |
-| Release | `https://huzaestate.com` (change `PRODUCTION_URL` if the public address is different) |
+| Development, target `server` (the default) | `https://huzaestate.com`: the deployed site and its real database, the same listings and accounts as the website |
+| Development, target `local` | `http://localhost:8085`: the website running on this computer, whose database holds only test data |
+| Release | always `https://huzaestate.com` (change `PRODUCTION_URL` if the public address is different) |
+
+Switch the development target with `npm run target:server` or `npm run target:local`; the running app reloads by itself. The live site is built against the server API (`api.dev.huzaestate.com`), so the app shows exactly the data the website shows. The local database is a different one and holds older test listings.
 
 Inside the Android emulator, `localhost` is the emulator itself. `scripts/dev.ps1` runs `adb reverse` for these ports, which makes them reach this computer, so the website works in the app without any change:
 
