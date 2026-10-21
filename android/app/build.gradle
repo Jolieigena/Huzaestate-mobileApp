@@ -55,9 +55,9 @@ react {
 }
 
 /**
- * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
+ * Run R8 on release builds: shrinks and obfuscates the Java/Kotlin code, so the app is smaller and harder to read.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -78,12 +78,23 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.huzaestate"
+
+    // The CMake that ships with the Android SDK by default (3.22.1) has a ninja that fails on Windows paths over 260 characters, which
+    // this project's native build reaches. 3.31.x has a ninja (1.12) that handles them; Windows long paths must be switched on.
+    externalNativeBuild {
+        cmake {
+            version "3.31.6"
+        }
+    }
+
     defaultConfig {
         applicationId "com.huzaestate"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // Each upload to Google Play needs a higher versionCode than the one before. Change both in gradle.properties
+        // (appVersionCode / appVersionName), or pass -PappVersionCode=2 -PappVersionName=1.0.1 to the build.
+        versionCode((findProperty('appVersionCode') ?: '1').toInteger())
+        versionName((findProperty('appVersionName') ?: '1.0.0').toString())
     }
     signingConfigs {
         debug {
@@ -92,16 +103,28 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // The upload key for Google Play. Its location and passwords are in android/keystore.properties, which is not committed.
+        // Without that file a release build stops with an error instead of falling back to the debug key.
+        release {
+            def keystoreFile = rootProject.file('keystore.properties')
+            if (keystoreFile.exists()) {
+                def keystoreProps = new Properties()
+                keystoreFile.withInputStream { keystoreProps.load(it) }
+                storeFile file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }

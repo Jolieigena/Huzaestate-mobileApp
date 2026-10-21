@@ -55,21 +55,20 @@ npm run dev:android
 
 It starts the emulator (creating the `HuzaPixel` emulator the first time), forwards the ports, builds the app and opens it. Metro, the JavaScript server, opens in its own window. The first build downloads a lot (Gradle and its libraries) and can take 30 to 40 minutes; later builds take a few minutes.
 
-**Windows path limit.** Windows stops the native (C++) build at 260-character paths and this project's folder is deep, so the script builds from a short drive letter, `H:`, which points at the same folder (`subst H: <project folder>`). If you run Gradle or the React Native commands yourself, do it from `H:\` after running that `subst` command, and not from the long path, or the build fails with "Filename longer than 260 characters". The mapping disappears when Windows restarts; `npm run dev:android` creates it again.
+**Windows path limit.** The native (C++) build creates paths longer than 260 characters. The ninja that comes with the Android SDK's default CMake (3.22.1) fails on them even with Windows long paths switched on, so the project asks for CMake 3.31.6, whose ninja (1.12) handles long paths. Install it once with `sdkmanager --install cmake;3.31.6`, and make sure Windows long paths are enabled (`LongPathsEnabled` = 1 in the registry). Nothing else is needed: the project builds from its normal folder.
 
 To start only the emulator: `npm run emulator`. It uses software rendering (the host graphics card can freeze the picture on Windows once the window loses focus), starts fresh each time, and sizes the window to about two thirds of the screen height and puts it in the top-right corner. The phone is 2400 pixels tall, and at its default size the window can be taller than a laptop screen and end up mostly off it. To run the app on a phone instead, enable USB debugging, connect it, and run `adb reverse tcp:8085 tcp:8085` and `adb reverse tcp:8081 tcp:8081` followed by `npx react-native run-android`.
 
 ### Building the installable file
 
 ```powershell
-subst H: "<this project's folder>"     # the short path, see above
-. H:\scripts\android-env.ps1
-cd H:\android
+. .\scripts\android-env.ps1
+cd android
 .\gradlew assembleRelease     # android\app\build\outputs\apk\release\app-release.apk
 .\gradlew bundleRelease       # the .aab file for Google Play
 ```
 
-Release builds load `PRODUCTION_URL`. Before publishing, create your own signing key and replace the debug signing in `android/app/build.gradle`; the generated project signs release builds with the debug key.
+Release builds load `PRODUCTION_URL` and are signed with the upload key named in `android/keystore.properties` (not committed). A release build without that file stops with an error. See `PLAY_STORE.md` for publishing on Google Play.
 
 ## iOS
 

@@ -17,10 +17,7 @@ if (-not (Get-NetTCPConnection -LocalPort 8082 -State Listen -ErrorAction Silent
   Start-Process powershell -ArgumentList '-NoExit', '-NoProfile', '-Command', "Set-Location '$root'; npx react-native start --port 8082"
 }
 
-# Windows stops the native (C++) build at 260-character paths, and this project's folder is deep. The build therefore runs from a
-# short drive letter that points at the same folder.
-if (-not ((& subst) -match '^H:\\')) { & subst H: $root }
-Set-Location 'H:\android'
+Set-Location (Join-Path $root 'android')
 # Only the emulator's processor type is built while developing (about four times faster); release builds include them all.
 .\gradlew.bat app:installDebug '-PreactNativeDevServerPort=8082' '-PreactNativeArchitectures=x86_64'
 if ($LASTEXITCODE -ne 0) { throw 'The build failed.' }
