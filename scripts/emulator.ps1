@@ -6,7 +6,7 @@ $image = 'system-images;android-35;google_apis;x86_64'
 
 # How much of the screen's usable height the emulator window should take. The emulator has a smallest size it will shrink to
 # (about 780 pixels tall), so on a short screen the window may end up larger than this.
-$heightShare = 0.65
+$heightShare = 0.85
 
 $existing = & emulator -list-avds 2>$null
 if ($existing -notcontains $name) {
