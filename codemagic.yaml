@@ -1,0 +1,55 @@
+workflows:
+  ios-release:
+    name: HuzaEstate iOS (App Store)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      # The App Store Connect API key added in Codemagic: Teams > Integrations > App Store Connect, named exactly like this.
+      app_store_connect: HuzaEstate
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.huzalabs.huzaestate
+      vars:
+        APP_STORE_APPLE_ID: 6835472013
+        XCODE_WORKSPACE: ios/HuzaEstate.xcworkspace
+        XCODE_SCHEME: HuzaEstate
+      node: 22
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events: []
+    scripts:
+      - name: Install JavaScript dependencies
+        script: npm ci
+      - name: Install iOS dependencies
+        script: cd ios && pod install
+      - name: Set up signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "com.huzalabs.huzaestate" --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Set the build number (one higher than the last upload)
+        script: |
+          LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          LATEST_TF=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          N=$(( ${LATEST:-0} > ${LATEST_TF:-0} ? ${LATEST:-0} : ${LATEST_TF:-0} ))
+          N=$(( N + 1 ))
+          sed -i '' "s/CURRENT_PROJECT_VERSION = [0-9]*;/CURRENT_PROJECT_VERSION = $N;/" ios/HuzaEstate.xcodeproj/project.pbxproj
+          echo "Build number: $N"
+      - name: Build the app
+        script: |
+          xcode-project build-ipa \
+            --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - jolie.igena@huzalabs.com
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
