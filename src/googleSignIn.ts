@@ -2,7 +2,7 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 
 /** The website's Google "web" client id: the same one the site and the backend use. The token the app obtains is issued for it, so the
  *  backend accepts it exactly as it accepts one from the website. It is public by design (it is also in the website's page code). */
-export const GOOGLE_WEB_CLIENT_ID = '370870704550-qanb1s793dkd0t5aa4nbmvvdn6i0lkul.apps.googleusercontent.com';
+export const GOOGLE_WEB_CLIENT_ID = '186743865368-d7dc00rq588skf43sbdhfkm18qpkru04.apps.googleusercontent.com';
 
 let configured = false;
 
