@@ -7,9 +7,9 @@ workflows:
       # The App Store Connect API key added in Codemagic: Teams > Integrations > App Store Connect, named exactly like this.
       app_store_connect: HuzaEstate
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.huzalabs.huzaestate
+      # Codemagic group "signing" holds the secret variable CERTIFICATE_PRIVATE_KEY (see the release-keys folder).
+      groups:
+        - signing
       vars:
         APP_STORE_APPLE_ID: 6835472013
         XCODE_WORKSPACE: ios/HuzaEstate.xcworkspace
@@ -27,7 +27,7 @@ workflows:
       - name: Set up signing
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files "com.huzalabs.huzaestate" --type IOS_APP_STORE --create
+          app-store-connect fetch-signing-files "com.huzalabs.huzaestate" --type IOS_APP_STORE --create --certificate-key "$CERTIFICATE_PRIVATE_KEY"
           keychain add-certificates
           xcode-project use-profiles
       - name: Set the build number (one higher than the last upload)
