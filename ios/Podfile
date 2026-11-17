@@ -15,6 +15,10 @@ if linkage != nil
 end
 
 target 'HuzaEstate' do
+  # Google sign-in's helper libraries are Swift pods that need module maps when built as static libraries.
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'RecaptchaInterop', :modular_headers => true
+
   config = use_native_modules!
 
   use_react_native!(
