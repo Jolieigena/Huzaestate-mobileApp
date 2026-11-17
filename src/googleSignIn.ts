@@ -1,8 +1,15 @@
+import { Platform } from 'react-native';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
 /** The website's Google "web" client id: the same one the site and the backend use. The token the app obtains is issued for it, so the
  *  backend accepts it exactly as it accepts one from the website. It is public by design (it is also in the website's page code). */
-export const GOOGLE_WEB_CLIENT_ID = '370870704550-qanb1s793dkd0t5aa4nbmvvdn6i0lkul.apps.googleusercontent.com';
+/** Android: the old project's web client (the one the website and the backend were set up with). */
+const ANDROID_WEB_CLIENT_ID = '370870704550-qanb1s793dkd0t5aa4nbmvvdn6i0lkul.apps.googleusercontent.com';
+/** iPhone: the web client and the iOS client of the Huzaestate Google Cloud project (186743865368). The backend must accept this web
+ *  client as well before Google sign-in is switched on for the iPhone (see the backend spec). */
+const IOS_WEB_CLIENT_ID = '186743865368-d7dc00rq588skf43sbdhfkm18qpkru04.apps.googleusercontent.com';
+const IOS_CLIENT_ID = '186743865368-8l8dcvudrl2bh0dujugurril8a3bgcio.apps.googleusercontent.com';
+export const GOOGLE_WEB_CLIENT_ID = Platform.OS === 'ios' ? IOS_WEB_CLIENT_ID : ANDROID_WEB_CLIENT_ID;
 
 let configured = false;
 
@@ -13,7 +20,7 @@ export type GoogleResult = { ok: true; idToken: string } | { ok: false; cancelle
 export async function requestGoogleIdToken(): Promise<GoogleResult> {
   try {
     if (!configured) {
-      GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID, scopes: ['email', 'profile'] });
+      GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID, scopes: ['email', 'profile'], ...(Platform.OS === 'ios' ? { iosClientId: IOS_CLIENT_ID } : {}) });
       configured = true;
     }
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });

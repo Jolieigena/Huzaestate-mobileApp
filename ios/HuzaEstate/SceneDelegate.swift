@@ -39,6 +39,12 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
   }
 
   func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    // Google sign-in returns to the app through a link: hand it to Google's sign-in class (found by name, so no extra import is needed).
+    if let url = URLContexts.first?.url,
+       let signInClass = NSClassFromString("GIDSignIn") as? NSObject.Type,
+       let signIn = signInClass.value(forKey: "sharedInstance") as? NSObject {
+      _ = signIn.perform(NSSelectorFromString("handleURL:"), with: url)
+    }
     RCTLinkingManager.scene(scene, openURLContexts: URLContexts)
   }
 
